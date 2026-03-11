@@ -171,7 +171,6 @@ export default function App() {
       setUser(u);
       if (u) {
         loadLearningContext();
-        checkApiKey();
         loadHistory(u.uid);
         loadUserTokens(u.uid);
       } else {
@@ -181,6 +180,10 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    setHasApiKey(!!geminiApiKey || !!(process?.env?.GEMINI_API_KEY));
+  }, [geminiApiKey]);
 
   const loadUserTokens = async (uid: string) => {
     try {
@@ -250,8 +253,7 @@ export default function App() {
   };
 
   const checkApiKey = async () => {
-    // We now use our own setting instead of the environment one if present
-    setHasApiKey(!!geminiApiKey);
+    // Moved to useEffect for automatic synchronization
   };
 
   const handleSelectKey = async () => {
@@ -1098,7 +1100,7 @@ export default function App() {
                     Democratizando el análisis <span className="text-indigo-600">sintáctico</span> profesional.
                   </h2>
                   <p className="text-lg text-slate-600 leading-relaxed">
-                    Sintaxis AI nace de la necesidad de herramientas educativas que no solo den respuestas, 
+                    LingoNG nace de la necesidad de herramientas educativas que no solo den respuestas, 
                     sino que sigan los estándares académicos más rigurosos de la RAE y la ASALE.
                   </p>
                   <div className="flex flex-wrap gap-4 pt-4">
@@ -1169,7 +1171,7 @@ export default function App() {
               <div className="modern-card bg-slate-900 text-white p-12 text-center border-none">
                 <h3 className="text-3xl font-bold mb-4">¿Listo para empezar?</h3>
                 <p className="text-slate-400 mb-8 max-w-lg mx-auto">
-                  Únete a miles de estudiantes y profesores que ya utilizan Sintaxis AI para sus estudios lingüísticos.
+                  Únete a miles de estudiantes y profesores que ya utilizan LingoNG para sus estudios lingüísticos.
                 </p>
                 <button 
                   onClick={() => setCurrentPage('home')}
