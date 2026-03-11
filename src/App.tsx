@@ -1197,8 +1197,8 @@ export default function App() {
             </div>
           </div>
           <div className="pt-8 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">© 2026 Sintaxis AI. Todos los derechos reservados.</p>
-            <p className="text-xs text-slate-400">Hecho con ❤️ para la comunidad lingüística.</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">© 2026 LingoNG & JaviDev. Todos los derechos reservados.</p>
+            <p className="text-xs text-slate-400">Proyecto Diseñado por JaviDev.</p>
           </div>
         </div>
       </footer>
