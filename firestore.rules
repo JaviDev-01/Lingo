@@ -1,0 +1,75 @@
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: feedback
+// Document ID: auto-generated
+// Fields:
+//   - sentence: string (required)
+//   - isCorrect: boolean (required)
+//   - correction: string (optional)
+//   - timestamp: timestamp (required)
+//   - userId: string (required)
+//
+// Collection: history
+// Document ID: auto-generated
+// Fields:
+//   - sentence: string (required)
+//   - result: map (required)
+//   - timestamp: timestamp (required)
+//   - userId: string (required)
+//
+// ===============================================================
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.email == "javieduca12@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidFeedback(data) {
+      return data.sentence is string && data.sentence.size() > 0 &&
+             data.isCorrect is bool &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidHistory(data) {
+      return data.sentence is string && data.sentence.size() > 0 &&
+             data.result is map &&
+             data.userId == request.auth.uid;
+    }
+
+    function isValidUser(data) {
+      return data.usedTokens is number && data.usedTokens >= 0;
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+    }
+
+    match /feedback/{feedbackId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidFeedback(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /history/{historyId} {
+      allow read: if isOwner(resource.data.userId);
+      allow create: if isAuthenticated() && isValidHistory(request.resource.data);
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+    }
+  }
+}

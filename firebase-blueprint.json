@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "Feedback": {
+      "title": "Feedback de Análisis",
+      "description": "Almacena los aciertos y fallos de los análisis sintácticos para aprendizaje.",
+      "type": "object",
+      "properties": {
+        "sentence": { "type": "string", "description": "La oración analizada" },
+        "isCorrect": { "type": "boolean", "description": "Si el usuario marcó el análisis como correcto" },
+        "correction": { "type": "string", "description": "La corrección proporcionada por el usuario si estaba mal" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["sentence", "isCorrect", "timestamp", "userId"]
+    },
+    "History": {
+      "title": "Historial de Análisis",
+      "description": "Almacena los análisis realizados por el usuario para consulta posterior.",
+      "type": "object",
+      "properties": {
+        "sentence": { "type": "string", "description": "La oración analizada" },
+        "result": { "type": "object", "description": "El objeto de resultado del análisis" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["sentence", "result", "timestamp", "userId"]
+    },
+    "User": {
+      "title": "Perfil de Usuario",
+      "description": "Almacena información del usuario, como el uso de tokens.",
+      "type": "object",
+      "properties": {
+        "usedTokens": { "type": "number", "description": "Número total de tokens utilizados por el usuario" }
+      },
+      "required": ["usedTokens"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Colección de perfiles de usuario"
+    },
+    "/feedback/{feedbackId}": {
+      "schema": "Feedback",
+      "description": "Colección de feedback de usuarios"
+    },
+    "/history/{historyId}": {
+      "schema": "History",
+      "description": "Colección de historial de análisis de usuarios"
+    }
+  }
+}

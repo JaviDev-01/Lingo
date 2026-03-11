@@ -1,0 +1,5 @@
+{
+  "name": "Sintaxis NGLE",
+  "description": "Analizador sintáctico profesional basado en la Nueva Gramática de la Lengua Española (NGLE) y el Glosario de Términos Gramaticales (GTG).",
+  "requestFramePermissions": []
+}
