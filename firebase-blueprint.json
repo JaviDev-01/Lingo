@@ -30,7 +30,8 @@
       "description": "Almacena información del usuario, como el uso de tokens.",
       "type": "object",
       "properties": {
-        "usedTokens": { "type": "number", "description": "Número total de tokens utilizados por el usuario" }
+        "usedTokens": { "type": "number", "description": "Número total de tokens utilizados por el usuario" },
+        "geminiApiKey": { "type": "string", "description": "Clave de API de Gemini personalizada del usuario" }
       },
       "required": ["usedTokens"]
     }

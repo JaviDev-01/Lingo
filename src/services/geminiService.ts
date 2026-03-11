@@ -27,8 +27,8 @@ Devuelve un JSON estructurado según el esquema proporcionado.
 Cada palabra tiene "niveles" con "etiqueta" y "ancho_grupo".
 `;
 
-export async function analyzeSentence(sentence: string, context?: string) {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+export async function analyzeSentence(sentence: string, apiKey: string, context?: string) {
+  const ai = new GoogleGenAI({ apiKey });
   
   const prompt = context 
     ? `HISTORIAL DE APRENDIZAJE (Tus errores pasados):\n${context}\n\nTAREA: Analiza la siguiente frase aplicando lo aprendido y calculando una confianza real: "${sentence}"`

@@ -143,7 +143,9 @@ declare global {
 }
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'history' | 'about'>('home');
+  const [currentPage, setCurrentPage] = useState<'home' | 'history' | 'about' | 'settings'>('home');
+  const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [savingKey, setSavingKey] = useState(false);
   const [sentence, setSentence] = useState('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -184,7 +186,9 @@ export default function App() {
     try {
       const userDoc = await getDoc(doc(db, 'users', uid));
       if (userDoc.exists()) {
-        setUsedTokens(userDoc.data().usedTokens || 0);
+        const data = userDoc.data();
+        setUsedTokens(data.usedTokens || 0);
+        if (data.geminiApiKey) setGeminiApiKey(data.geminiApiKey);
       } else {
         await setDoc(doc(db, 'users', uid), { usedTokens: 0 });
         setUsedTokens(0);
@@ -204,6 +208,21 @@ export default function App() {
       setUsedTokens(newTotal);
     } catch (e) {
       console.error("Error updating tokens:", e);
+    }
+  };
+
+  const saveUserApiKey = async (key: string) => {
+    if (!user) return;
+    setSavingKey(true);
+    try {
+      await updateDoc(doc(db, 'users', user.uid), { geminiApiKey: key });
+      setGeminiApiKey(key);
+      setError(null);
+    } catch (e) {
+      console.error("Error saving API key:", e);
+      setError("No se pudo guardar la clave de API.");
+    } finally {
+      setSavingKey(false);
     }
   };
 
@@ -231,10 +250,8 @@ export default function App() {
   };
 
   const checkApiKey = async () => {
-    if (window.aistudio) {
-      const selected = await window.aistudio.hasSelectedApiKey();
-      setHasApiKey(selected);
-    }
+    // We now use our own setting instead of the environment one if present
+    setHasApiKey(!!geminiApiKey);
   };
 
   const handleSelectKey = async () => {
@@ -318,7 +335,16 @@ export default function App() {
     }, 50);
     
     try {
-      const analysis = await analyzeSentence(sentence, learningContext);
+      const apiKeyToUse = geminiApiKey || (process.env.GEMINI_API_KEY as string);
+      
+      if (!apiKeyToUse && !geminiApiKey) {
+        setError("Por favor, configura tu clave de API de Gemini en Ajustes para continuar.");
+        setLoading(false);
+        clearInterval(progressInterval);
+        return;
+      }
+
+      const analysis = await analyzeSentence(sentence, apiKeyToUse, learningContext);
       clearInterval(progressInterval);
       setLoadingStage('¡Análisis completado!');
       setProgress(100);
@@ -394,7 +420,7 @@ export default function App() {
 
           <div className="flex items-center gap-8">
             <div className="hidden md:flex items-center gap-6">
-              {['home', 'history', 'about'].map((page) => (
+              {['home', 'history', 'settings', 'about'].map((page) => (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page as any)}
@@ -402,7 +428,7 @@ export default function App() {
                     currentPage === page ? 'text-indigo-600' : 'text-slate-500'
                   }`}
                 >
-                  {page === 'home' ? 'Inicio' : page === 'history' ? 'Historial' : 'Sobre NGLE'}
+                  {page === 'home' ? 'Inicio' : page === 'history' ? 'Historial' : page === 'settings' ? 'Ajustes' : 'Sobre NGLE'}
                   {currentPage === page && (
                     <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 rounded-full" />
                   )}
@@ -955,6 +981,102 @@ export default function App() {
                   </button>
                 </div>
               )}
+            </motion.div>
+          )}
+
+          {currentPage === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="max-w-2xl mx-auto space-y-8"
+            >
+              <div className="text-center space-y-4">
+                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Configuración</h2>
+                <p className="text-slate-500">Gestiona tu acceso al motor de Inteligencia Artificial.</p>
+              </div>
+
+              <div className="modern-card p-8 space-y-6">
+                <div className="flex items-center gap-3 text-slate-900">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <Zap size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold">Gemini API Key</h3>
+                    <p className="text-xs text-slate-400 font-medium">Clave personal para el análisis</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="relative">
+                    <input 
+                      type="password"
+                      value={geminiApiKey}
+                      onChange={(e) => setGeminiApiKey(e.target.value)}
+                      placeholder="Introduce tu clave AIzaSy..."
+                      className="modern-input pr-12"
+                      disabled={!user}
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                      <Zap size={18} />
+                    </div>
+                  </div>
+
+                  {!user ? (
+                    <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3 text-amber-700">
+                      <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                      <p className="text-sm font-medium">Debes iniciar sesión para guardar tu clave de API de forma segura en tu perfil.</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-4">
+                      <button 
+                        onClick={() => saveUserApiKey(geminiApiKey)}
+                        disabled={savingKey || !geminiApiKey}
+                        className="modern-button w-full flex items-center justify-center gap-2"
+                      >
+                        {savingKey ? <Loader2 className="animate-spin" size={18} /> : <Check size={18} />}
+                        {savingKey ? 'Guardando...' : 'Guardar Clave de API'}
+                      </button>
+                      
+                      <div className="bg-slate-50 rounded-xl p-4 space-y-2">
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">¿Por qué usar tu propia clave?</p>
+                        <ul className="text-xs text-slate-500 space-y-1 list-disc pl-4">
+                          <li>Mayor privacidad y control sobre tus peticiones.</li>
+                          <li>Sin límites compartidos con otros usuarios.</li>
+                          <li>Acceso directo a las capacidades de Gemini 1.5 Flash.</li>
+                        </ul>
+                        <a 
+                          href="https://aistudio.google.com/app/apikey" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:underline"
+                        >
+                          Obtén una clave gratis aquí <ExternalLink size={10} />
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="modern-card p-0 overflow-hidden border-red-100">
+                <div className="bg-red-50 p-4 border-b border-red-100">
+                  <h3 className="text-sm font-bold text-red-700 flex items-center gap-2">
+                    <Trash2 size={16} /> Zona de Peligro
+                  </h3>
+                </div>
+                <div className="p-6">
+                  <p className="text-xs text-slate-500 mb-4">Borrar tu clave de API impedirá que puedas realizar nuevos análisis sintácticos hasta que configures una nueva.</p>
+                  <button 
+                    onClick={() => saveUserApiKey('')}
+                    disabled={savingKey || !geminiApiKey}
+                    className="text-xs font-bold text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    Eliminar clave de API
+                  </button>
+                </div>
+              </div>
             </motion.div>
           )}
 

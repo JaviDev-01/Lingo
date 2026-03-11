@@ -18,3 +18,24 @@ View your app in AI Studio: https://ai.studio/apps/c17d0ed6-384f-4fa6-a51c-5e314
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Deploy to Vercel
+
+Sigue estos pasos para publicar tu aplicación en Vercel:
+
+1. **Inicia sesión en Vercel** (si aún no lo has hecho):
+   `vercel login`
+
+2. **Despliega el proyecto**:
+   `vercel`
+
+   - Sigue las instrucciones en la terminal (puedes pulsar Enter para aceptar los valores por defecto).
+
+3. **Configura tu API Key**:
+   Para que el análisis sintáctico funcione en la web, añade tu clave de API en Vercel:
+   `vercel env add GEMINI_API_KEY`
+
+4. **Despliegue final (Producción)**:
+   `vercel --prod`
+
+¡Tu aplicación estará lista en una URL de Vercel!

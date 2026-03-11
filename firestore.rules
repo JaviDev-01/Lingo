@@ -51,7 +51,8 @@ service cloud.firestore {
     }
 
     function isValidUser(data) {
-      return data.usedTokens is number && data.usedTokens >= 0;
+      return data.usedTokens is number && data.usedTokens >= 0 &&
+             (!('geminiApiKey' in data) || data.geminiApiKey is string);
     }
 
     match /users/{userId} {
