@@ -1190,7 +1190,7 @@ export default function App() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xs">S</div>
-              <span className="font-bold text-slate-900 tracking-tight">Sintaxis AI</span>
+              <span className="font-bold text-slate-900 tracking-tight">Sintaxis con IA</span>
             </div>
             <div className="flex gap-8">
               <a href="#" className="text-sm font-bold text-slate-400 hover:text-indigo-600 transition-colors">Privacidad</a>
